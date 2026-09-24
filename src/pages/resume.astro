@@ -1,0 +1,185 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import { site, experience, education, skills, paper, honours } from '../data/site';
+
+const projects = (await getCollection('projects')).filter((p) => p.id !== '2020tax').sort((a, b) => a.data.order - b.data.order);
+const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/, '');
+---
+
+<Base title="Résumé" description="Résumé of Deepanshu Yadav, software engineer in Noida, India." og="resume">
+  <div class="page enter">
+    <p class="tools no-print">
+      <a href="/about" class="back">← About</a>
+      <button type="button" class="u" data-print>Save as PDF</button>
+    </p>
+
+    <article class="cv">
+      <header>
+        <h1>{site.name}</h1>
+        <p class="muted">
+          Software engineer, {site.location} · <a href={`mailto:${site.email}`}>{site.email}</a> ·
+          <a href={site.url}>{host(site.url)}</a> · <a href={site.socials.github}>{host(site.socials.github)}</a> ·
+          <a href={site.socials.linkedin}>{host(site.socials.linkedin)}</a>
+        </p>
+      </header>
+
+      <section>
+        <h2>Experience</h2>
+        {
+          experience.map((job) => (
+            <div class="item">
+              <p class="head">
+                <span class="ink">
+                  {job.company}, {job.role}
+                </span>
+                <span class="muted">{job.period}</span>
+              </p>
+              <ul>
+                {job.points.map((p) => (
+                  <li>{p}</li>
+                ))}
+              </ul>
+            </div>
+          ))
+        }
+      </section>
+
+      <section>
+        <h2>Projects</h2>
+        {
+          projects.map((p) => (
+            <div class="item">
+              <p class="head">
+                <a href={`${site.url}/projects/${p.id}`} class="ink">
+                  {p.data.title}
+                </a>
+                <span class="muted">{p.data.year}</span>
+              </p>
+              <p>
+                {p.data.line}. <span class="muted">{p.data.stack.join(', ')}</span>
+              </p>
+            </div>
+          ))
+        }
+      </section>
+
+      <section>
+        <h2>Research</h2>
+        <p><a href={paper.url} class="ink">{paper.title}</a>, {paper.venue}</p>
+      </section>
+
+      <section>
+        <h2>Education</h2>
+        <p class="head">
+          <span class="ink">{education.degree}, {education.school}</span>
+          <span class="muted">{education.period}</span>
+        </p>
+      </section>
+
+      <section>
+        <h2>Skills</h2>
+        {skills.map(([k, v]) => <p><span class="ink">{k}:</span> {v}</p>)}
+      </section>
+
+      <section>
+        <h2>Also</h2>
+        <ul>{honours.map((h) => <li>{h}</li>)}</ul>
+      </section>
+    </article>
+  </div>
+</Base>
+
+<style>
+  .tools {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2rem;
+  }
+
+  .back {
+    color: var(--ink-3);
+    transition: color 200ms;
+  }
+
+  .back:hover {
+    color: var(--ink);
+  }
+
+  header .muted {
+    margin-top: 0.25rem;
+  }
+
+  header a:hover,
+  .cv a:hover {
+    color: var(--ink);
+  }
+
+  section {
+    margin-top: 2rem;
+  }
+
+  h2 {
+    color: var(--ink-3);
+    font-weight: 400;
+    margin-bottom: 0.6rem;
+  }
+
+  .item + .item {
+    margin-top: 1rem;
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .ink {
+    color: var(--ink);
+  }
+
+  ul {
+    padding-left: 1.1rem;
+    margin-top: 0.3rem;
+  }
+
+  li + li {
+    margin-top: 0.25rem;
+  }
+
+  @media print {
+    @page {
+      size: A4;
+      margin: 16mm;
+    }
+    :global(.header),
+    :global(.footer),
+    :global(.palette),
+    :global(.skip-link) {
+      display: none !important;
+    }
+    :global(body) {
+      font-size: 10pt;
+      line-height: 1.45;
+      background: #fff;
+      color: #333;
+    }
+    .cv * {
+      animation: none !important;
+    }
+    .ink,
+    h1 {
+      color: #000;
+    }
+    section {
+      margin-top: 14pt;
+      break-inside: avoid;
+    }
+  }
+</style>
+
+<script>
+  document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
+</script>

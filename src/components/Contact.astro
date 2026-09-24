@@ -1,0 +1,206 @@
+---
+import { site } from '../data/site';
+
+// Many visitors have no desktop mail app set up, so a bare mailto: link would do nothing for them.
+// Offer the web clients most people use, with the message already addressed.
+const subject = 'Hello from your website';
+const to = encodeURIComponent(site.email);
+const su = encodeURIComponent(subject);
+
+const options = [
+  { label: 'Gmail', href: `https://mail.google.com/mail/?view=cm&fs=1&to=${to}&su=${su}`, event: 'contact-gmail', external: true },
+  { label: 'Outlook', href: `https://outlook.office.com/mail/deeplink/compose?to=${to}&subject=${su}`, event: 'contact-outlook', external: true },
+  { label: 'Mail app', href: `mailto:${site.email}?subject=${su}`, event: 'contact-mailto', external: false },
+];
+---
+
+<div class="contact" data-contact>
+  <button type="button" class="trigger" aria-expanded="false" aria-controls="contact-menu" aria-haspopup="true">
+    Contact
+  </button>
+  <div class="menu" id="contact-menu" hidden>
+    <p class="to">{site.email}</p>
+    <ul>
+      {
+        options.map((o) => (
+          <li>
+            <a
+              href={o.href}
+              data-goatcounter-click={o.event}
+              data-goatcounter-title={o.label}
+              {...(o.external ? { target: '_blank', rel: 'noopener' } : {})}
+            >
+              {o.label}
+              {o.external && <span aria-hidden="true">↗</span>}
+            </a>
+          </li>
+        ))
+      }
+      <li>
+        <button type="button" data-copy-email={site.email} data-goatcounter-click="contact-copy" data-goatcounter-title="Copy">
+          <span data-label>Copy address</span>
+        </button>
+      </li>
+    </ul>
+    <span class="sr-only" aria-live="polite" data-copy-note></span>
+  </div>
+</div>
+
+<style>
+  .contact {
+    position: relative;
+  }
+
+  .trigger {
+    padding: 0.2rem 0.6rem;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    color: var(--ink-2);
+    font-size: 0.92em;
+    line-height: 1.5;
+    transition:
+      color 200ms,
+      border-color 200ms,
+      background-color 200ms;
+  }
+
+  .trigger:hover,
+  .trigger[aria-expanded='true'] {
+    color: var(--ink);
+    border-color: color-mix(in oklab, var(--ink-3) 50%, transparent);
+    background: var(--bg-2);
+  }
+
+  .menu {
+    position: absolute;
+    top: calc(100% + 0.5rem);
+    left: 0;
+    z-index: 40;
+    min-width: 13rem;
+    padding: 0.35rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    box-shadow: 0 16px 40px -20px rgb(0 0 0 / 0.3);
+    transform-origin: top left;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    .menu:not([hidden]) {
+      animation: open 220ms var(--ease);
+    }
+  }
+
+  @keyframes open {
+    from {
+      opacity: 0;
+      transform: translateY(-4px) scale(0.98);
+    }
+  }
+
+  .to {
+    padding: 0.4rem 0.6rem 0.5rem;
+    font-size: 0.85em;
+    color: var(--ink-3);
+    border-bottom: 1px solid var(--line);
+    margin-bottom: 0.3rem;
+  }
+
+  ul {
+    list-style: none;
+    padding: 0;
+  }
+
+  .menu a,
+  .menu button {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    padding: 0.4rem 0.6rem;
+    border-radius: 6px;
+    color: var(--ink-2);
+    text-align: left;
+    transition:
+      background-color 150ms,
+      color 150ms;
+  }
+
+  .menu a span {
+    color: var(--ink-3);
+  }
+
+  .menu a:hover,
+  .menu button:hover,
+  .menu a:focus-visible,
+  .menu button:focus-visible {
+    background: var(--bg-2);
+    color: var(--ink);
+    outline: none;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-contact]').forEach((root) => {
+    const trigger = root.querySelector<HTMLButtonElement>('.trigger')!;
+    const menu = root.querySelector<HTMLElement>('.menu')!;
+    const items = () => [...menu.querySelectorAll<HTMLElement>('a, button')];
+
+    const setOpen = (open: boolean, focus = true) => {
+      menu.hidden = !open;
+      trigger.setAttribute('aria-expanded', String(open));
+      if (open && focus) items()[0]?.focus();
+    };
+
+    trigger.addEventListener('click', () => setOpen(menu.hidden !== false, false));
+    trigger.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        setOpen(true);
+      }
+    });
+
+    menu.addEventListener('keydown', (e) => {
+      const list = items();
+      const i = list.indexOf(document.activeElement as HTMLElement);
+      if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        list[(i + 1) % list.length].focus();
+      } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        list[(i - 1 + list.length) % list.length].focus();
+      }
+    });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && !menu.hidden) {
+        setOpen(false);
+        trigger.focus();
+      }
+    });
+    document.addEventListener('click', (e) => {
+      if (!root.contains(e.target as Node)) setOpen(false);
+    });
+    root.addEventListener('focusout', (e) => {
+      if (!root.contains(e.relatedTarget as Node)) setOpen(false);
+    });
+    menu.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setOpen(false)));
+
+    const copy = menu.querySelector<HTMLButtonElement>('[data-copy-email]')!;
+    const label = copy.querySelector('[data-label]')!;
+    const note = menu.querySelector('[data-copy-note]')!;
+    copy.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(copy.dataset.copyEmail!);
+        label.textContent = 'Copied';
+        note.textContent = 'Email address copied';
+        setTimeout(() => {
+          label.textContent = 'Copy address';
+          note.textContent = '';
+          setOpen(false);
+        }, 1100);
+      } catch {
+        location.href = `mailto:${copy.dataset.copyEmail}`;
+      }
+    });
+  });
+</script>

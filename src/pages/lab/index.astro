@@ -1,0 +1,135 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const items = (await getCollection('lab')).sort((a, b) => b.data.year - a.data.year || a.data.title.localeCompare(b.data.title));
+const categories = ['All', ...new Set(items.map((i) => i.data.category))];
+---
+
+<Base title="Lab" description="Small experiments by Deepanshu Yadav: hardware, a bit of ML, web toys and command-line tools." og="lab">
+  <div class="page enter">
+    <h1>Lab</h1>
+    <p class="intro">Small things I made to learn something. Some are finished, some aren’t.</p>
+
+    <div class="filters" role="group" aria-label="Show" data-filters>
+      {
+        categories.map((c, i) => (
+          <button type="button" aria-pressed={i === 0 ? 'true' : 'false'} data-filter={c}>
+            {c}
+          </button>
+        ))
+      }
+    </div>
+    <p class="sr-only" aria-live="polite" data-status></p>
+
+    <ul class="rows" data-list>
+      {
+        items.map((item) => {
+          const href = item.data.links[0]?.href;
+          const Tag = href ? 'a' : 'div';
+          return (
+            <li data-category={item.data.category}>
+              <Tag class="row" {...(href ? { href, target: '_blank', rel: 'noopener' } : {})}>
+                <span class="row-title">
+                  {item.data.title}
+                  {href && <span class="ext" aria-hidden="true">↗</span>}
+                </span>
+                <span class="row-line">{item.data.line}</span>
+                <span class="row-meta">{item.data.year}</span>
+              </Tag>
+            </li>
+          );
+        })
+      }
+    </ul>
+  </div>
+</Base>
+
+<style>
+  .intro {
+    margin-top: 0.5rem;
+  }
+
+  .filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1rem;
+    margin-block: 2.5rem 1rem;
+  }
+
+  .filters button {
+    color: var(--ink-3);
+    padding-block: 0.25rem;
+    transition: color 200ms;
+  }
+
+  .filters button:hover,
+  .filters button[aria-pressed='true'] {
+    color: var(--ink);
+  }
+
+  .filters button[aria-pressed='true'] {
+    text-decoration: underline;
+    text-decoration-color: var(--ink-3);
+    text-underline-offset: 5px;
+  }
+
+  li[hidden] {
+    display: none;
+  }
+
+  /* Lab rows can wrap: the one-liners are longer */
+  .row-line {
+    white-space: normal;
+  }
+
+  .ext {
+    margin-left: 0.25rem;
+    color: var(--ink-3);
+    font-size: 0.85em;
+  }
+
+  @media (prefers-reduced-motion: no-preference) {
+    :global(.list-changed) li:not([hidden]) {
+      animation: in 400ms var(--ease) both;
+    }
+  }
+
+  @keyframes in {
+    from {
+      opacity: 0;
+      transform: translateY(4px);
+    }
+  }
+</style>
+
+<script>
+  const group = document.querySelector<HTMLElement>('[data-filters]');
+  const list = document.querySelector<HTMLElement>('[data-list]');
+  const rows = [...document.querySelectorAll<HTMLLIElement>('[data-list] > li')];
+  const status = document.querySelector<HTMLElement>('[data-status]');
+
+  const apply = (filter: string) => {
+    group?.querySelectorAll('button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.filter === filter)));
+    let n = 0;
+    rows.forEach((r) => {
+      r.hidden = !(filter === 'All' || r.dataset.category === filter);
+      if (!r.hidden) n++;
+    });
+    if (status) status.textContent = `${n} shown`;
+    list?.classList.remove('list-changed');
+    void list?.offsetWidth; // restart the entrance animation
+    list?.classList.add('list-changed');
+    const url = new URL(location.href);
+    filter === 'All' ? url.searchParams.delete('c') : url.searchParams.set('c', filter);
+    history.replaceState(null, '', url);
+  };
+
+  group?.addEventListener('click', (e) => {
+    const btn = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-filter]');
+    if (btn) apply(btn.dataset.filter!);
+  });
+
+  const initial = new URL(location.href).searchParams.get('c');
+  if (initial && group?.querySelector(`[data-filter="${CSS.escape(initial)}"]`)) apply(initial);
+</script>

@@ -1,0 +1,405 @@
+/* ------------------------------------------------------------------
+   Tokens
+   ------------------------------------------------------------------ */
+
+:root {
+  color-scheme: light;
+  --bg: #fcfcfb;
+  --bg-2: #f4f3f0;
+  --ink: #1c1c1a;
+  --ink-2: #5e5d59;
+  --ink-3: #74736e;
+  --line: #e9e8e4;
+  --accent: #c2410c;
+
+  --font: 'Geist Variable', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'Geist Mono Variable', ui-monospace, 'SF Mono', Menlo, monospace;
+
+  --col: 36rem;
+  --pad: 1.25rem;
+  --ease: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #111110;
+  --bg-2: #1a1a18;
+  --ink: #ededeb;
+  --ink-2: #a3a29d;
+  --ink-3: #8b8a85;
+  --line: #242422;
+  --accent: #e8835a;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #111110;
+    --bg-2: #1a1a18;
+    --ink: #ededeb;
+    --ink-2: #a3a29d;
+    --ink-3: #8b8a85;
+    --line: #242422;
+    --accent: #e8835a;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Base
+   ------------------------------------------------------------------ */
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  color: var(--ink-2);
+  font-family: var(--font);
+  font-size: 15.5px;
+  line-height: 1.65;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  overflow-x: clip;
+}
+
+@media (max-width: 480px) {
+  body {
+    font-size: 16px;
+  }
+}
+
+main {
+  flex: 1;
+}
+
+main:focus {
+  outline: none;
+}
+
+h1,
+h2,
+h3 {
+  font-size: inherit;
+  font-weight: 500;
+  color: var(--ink);
+  line-height: 1.4;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img,
+svg,
+canvas {
+  display: block;
+  max-width: 100%;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+  background: none;
+  border: 0;
+  padding: 0;
+  cursor: pointer;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 20%, transparent);
+  color: var(--ink);
+}
+
+:focus-visible {
+  outline: 1.5px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 3px;
+}
+
+/* ------------------------------------------------------------------
+   Layout
+   ------------------------------------------------------------------ */
+
+.page {
+  width: 100%;
+  max-width: calc(var(--col) + var(--pad) * 2);
+  margin-inline: auto;
+  padding-inline: var(--pad);
+}
+
+.section {
+  margin-top: 3.5rem;
+}
+
+.label {
+  color: var(--ink-3);
+  font-weight: 400;
+  margin-bottom: 1rem;
+}
+
+.muted {
+  color: var(--ink-3);
+}
+
+.mono {
+  font-family: var(--mono);
+  font-size: 0.85em;
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.skip-link {
+  position: fixed;
+  top: 0.75rem;
+  left: 0.75rem;
+  z-index: 100;
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  background: var(--ink);
+  color: var(--bg);
+  transform: translateY(-200%);
+}
+
+.skip-link:focus-visible {
+  transform: none;
+}
+
+/* ------------------------------------------------------------------
+   Links
+   ------------------------------------------------------------------ */
+
+/* Inline links in running text: a quiet underline that darkens on hover */
+.u {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--ink-3) 40%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+  transition: text-decoration-color 200ms;
+}
+
+.u:hover {
+  text-decoration-color: var(--ink-3);
+}
+
+/* ------------------------------------------------------------------
+   Rows: the main list pattern. Hovering one row fades the others.
+   ------------------------------------------------------------------ */
+
+.rows {
+  list-style: none;
+  padding: 0;
+}
+
+.row {
+  display: flex;
+  align-items: baseline;
+  gap: 1rem;
+  padding: 0.5rem 0;
+  transition: opacity 250ms var(--ease);
+}
+
+.row-title {
+  color: var(--ink);
+  flex-shrink: 0;
+}
+
+.row-line {
+  flex: 1;
+  min-width: 0;
+  color: var(--ink-3);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.row-meta {
+  color: var(--ink-3);
+  font-variant-numeric: tabular-nums;
+  flex-shrink: 0;
+}
+
+@media (hover: hover) {
+  .rows:has(.row:hover) .row:not(:hover) {
+    opacity: 0.4;
+  }
+}
+
+@media (max-width: 560px) {
+  .row {
+    flex-wrap: wrap;
+    row-gap: 0;
+  }
+  .row-title {
+    flex: 1;
+  }
+  .row-line {
+    order: 3;
+    flex-basis: 100%;
+    white-space: normal;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Page entrance: content settles in, one block after another
+   ------------------------------------------------------------------ */
+
+@media (prefers-reduced-motion: no-preference) {
+  .enter > * {
+    animation: enter 700ms var(--ease) both;
+  }
+  .enter > :nth-child(2) { animation-delay: 60ms; }
+  .enter > :nth-child(3) { animation-delay: 120ms; }
+  .enter > :nth-child(4) { animation-delay: 180ms; }
+  .enter > :nth-child(5) { animation-delay: 240ms; }
+  .enter > :nth-child(6) { animation-delay: 300ms; }
+  .enter > :nth-child(7) { animation-delay: 360ms; }
+  .enter > :nth-child(n + 8) { animation-delay: 420ms; }
+}
+
+@keyframes enter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+}
+
+/* Soft crossfade between pages, no JavaScript router */
+@view-transition {
+  navigation: auto;
+}
+
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation-duration: 200ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* ------------------------------------------------------------------
+   Long-form text (case studies, posts)
+   ------------------------------------------------------------------ */
+
+.prose > * + * {
+  margin-top: 1.1em;
+}
+
+.prose h2 {
+  margin-top: 2.2em;
+}
+
+.prose h2 + * {
+  margin-top: 0.5em;
+}
+
+.prose a {
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: color-mix(in oklab, var(--ink-3) 40%, transparent);
+  text-underline-offset: 3px;
+}
+
+.prose a:hover {
+  text-decoration-color: var(--ink-3);
+}
+
+.prose strong {
+  color: var(--ink);
+  font-weight: 500;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.1em;
+}
+
+.prose li + li {
+  margin-top: 0.4em;
+}
+
+.prose blockquote {
+  padding-left: 1rem;
+  border-left: 1px solid var(--line);
+  color: var(--ink);
+}
+
+.prose code:not(pre code) {
+  font-family: var(--mono);
+  font-size: 0.88em;
+  color: var(--ink);
+}
+
+.prose pre {
+  font-family: var(--mono);
+  font-size: 0.85rem;
+  padding: 1rem;
+  border-radius: 8px;
+  overflow-x: auto;
+  background: var(--bg-2) !important;
+}
+
+.astro-code,
+.astro-code span {
+  color: var(--shiki-light);
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) .astro-code,
+  :root:not([data-theme='light']) .astro-code span {
+    color: var(--shiki-dark);
+  }
+}
+
+kbd {
+  font-family: var(--mono);
+  font-size: 0.8em;
+  padding: 0.05rem 0.35rem;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink-3);
+}
+
+@media print {
+  .no-print {
+    display: none !important;
+  }
+}

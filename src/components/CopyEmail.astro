@@ -1,0 +1,86 @@
+---
+import { site } from '../data/site';
+---
+
+<span class="wrap">
+  <a href={`mailto:${site.email}`} class="u">{site.email}</a>
+  <button type="button" class="copy" data-copy={site.email} aria-label="Copy email address">
+    <svg viewBox="0 0 16 16" width="14" height="14" fill="none" stroke="currentColor" stroke-width="1.25" aria-hidden="true">
+      <rect x="5.5" y="5.5" width="8" height="8" rx="1.5"></rect>
+      <path d="M10.5 5.5V4a1.5 1.5 0 0 0-1.5-1.5H4A1.5 1.5 0 0 0 2.5 4v5A1.5 1.5 0 0 0 4 10.5h1.5"></path>
+    </svg>
+    <span class="tip" aria-hidden="true">Copied</span>
+  </button>
+  <span class="sr-only" aria-live="polite" data-copy-status></span>
+</span>
+
+<style>
+  .wrap {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.35rem;
+  }
+
+  .copy {
+    position: relative;
+    align-self: center;
+    display: inline-grid;
+    place-items: center;
+    width: 1.6rem;
+    height: 1.6rem;
+    border-radius: 5px;
+    color: var(--ink-3);
+    transition:
+      color 200ms,
+      background-color 200ms;
+  }
+
+  .copy:hover {
+    color: var(--ink);
+    background: var(--bg-2);
+  }
+
+  .tip {
+    position: absolute;
+    bottom: calc(100% + 4px);
+    left: 50%;
+    padding: 0.1rem 0.45rem;
+    border-radius: 4px;
+    background: var(--ink);
+    color: var(--bg);
+    font-size: 0.75rem;
+    white-space: nowrap;
+    pointer-events: none;
+    opacity: 0;
+    transform: translate(-50%, 3px);
+    transition:
+      opacity 200ms,
+      transform 300ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .copy:global(.done) .tip {
+    opacity: 1;
+    transform: translate(-50%, 0);
+  }
+</style>
+
+<script>
+  document.querySelectorAll<HTMLButtonElement>('[data-copy]').forEach((btn) => {
+    const status = btn.parentElement?.querySelector('[data-copy-status]');
+    let timer: number | undefined;
+    btn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(btn.dataset.copy!);
+        btn.classList.add('done');
+        if (status) status.textContent = 'Email copied';
+        clearTimeout(timer);
+        timer = window.setTimeout(() => {
+          btn.classList.remove('done');
+          if (status) status.textContent = '';
+        }, 1500);
+      } catch {
+        location.href = `mailto:${btn.dataset.copy}`;
+      }
+    });
+  });
+</script>

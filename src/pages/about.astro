@@ -1,0 +1,153 @@
+---
+import Base from '../layouts/Base.astro';
+import CopyEmail from '../components/CopyEmail.astro';
+import { site, experience, education, skills, paper, honours } from '../data/site';
+
+const jsonLd = {
+  '@context': 'https://schema.org',
+  '@type': 'ProfilePage',
+  mainEntity: { '@id': `${site.url}/#person` },
+};
+---
+
+<Base title="About" description="About Deepanshu Yadav: software engineer in Noida, India, with an electrical engineering degree." og="about" type="profile" jsonLd={jsonLd}>
+  <div class="page enter">
+    <h1>About</h1>
+    <p class="first">
+      I studied electrical engineering, and I still like working with hardware. But somewhere in college I started
+      building software for the web, first for myself and then for other people. These days I mostly work on the
+      backend side of things, and that’s what I want to do full time.
+    </p>
+    <p class="gap">
+      I was raised by my mother, on her own. She’s the strongest person I know, and most of what I believe about hard
+      work I learned from watching her, not from being told. Anything I get right, she gets some of the credit for.
+    </p>
+    <p class="gap">
+      Most of my projects started with something slow or annoying that the people around me had just accepted.
+    </p>
+
+    <section class="section" aria-labelledby="work">
+      <h2 id="work" class="label">Work</h2>
+      {
+        experience.map((job) => (
+          <div>
+            <p class="head">
+              <a href={job.url} class="u" target="_blank" rel="noopener">
+                {job.company}
+              </a>
+              <span class="muted">{job.period}</span>
+            </p>
+            <p class="muted">{job.role}</p>
+            <ul class="points">
+              {job.points.map((p) => (
+                <li>{p}</li>
+              ))}
+            </ul>
+          </div>
+        ))
+      }
+    </section>
+
+    <section class="section" aria-labelledby="edu">
+      <h2 id="edu" class="label">Education</h2>
+      <p class="head">
+        <span class="ink">{education.degree}</span>
+        <span class="muted">{education.period}</span>
+      </p>
+      <p class="muted">{education.school}</p>
+    </section>
+
+    <section class="section" aria-labelledby="research">
+      <h2 id="research" class="label">Research</h2>
+      <p>
+        <a href={paper.url} class="u" target="_blank" rel="noopener">{paper.title}</a>
+        <span class="muted">, {paper.venue}.</span>
+      </p>
+      <p class="gap-s muted">
+        We compared three kinds of neural networks for spotting faults in power-grid data. I worked on the experiments and
+        the models. <a href={site.socials.scholar} class="u" target="_blank" rel="noopener">Google Scholar</a>
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="tools">
+      <h2 id="tools" class="label">What I use</h2>
+      <dl class="tools">
+        {
+          skills.map(([k, v]) => (
+            <div>
+              <dt>{k}</dt>
+              <dd>{v}</dd>
+            </div>
+          ))
+        }
+      </dl>
+    </section>
+
+    <section class="section" aria-labelledby="misc">
+      <h2 id="misc" class="label">Also</h2>
+      <ul class="points">
+        {honours.map((h) => <li>{h}</li>)}
+      </ul>
+    </section>
+
+    <section class="section" aria-labelledby="site">
+      <h2 id="site" class="label">This site</h2>
+      <p>
+        Plain HTML and CSS built with Astro, with no framework running in your browser. Each page is about 8 KB
+        compressed. A push to GitHub builds it and deploys it with GitHub Actions, and the link-preview images are made
+        during the build.
+      </p>
+    </section>
+
+    <section class="section" aria-labelledby="contact">
+      <h2 id="contact" class="label">Contact</h2>
+      <p><CopyEmail /></p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .first {
+    margin-top: 1.5rem;
+  }
+
+  .gap {
+    margin-top: 1rem;
+  }
+
+  .gap-s {
+    margin-top: 0.4rem;
+  }
+
+  .head {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .ink {
+    color: var(--ink);
+  }
+
+  .points {
+    margin-top: 0.75rem;
+    padding-left: 1.1rem;
+  }
+
+  .points li + li {
+    margin-top: 0.4rem;
+  }
+
+  .points li::marker {
+    color: var(--ink-3);
+  }
+
+  .tools div + div {
+    margin-top: 0.75rem;
+  }
+
+  dt {
+    color: var(--ink);
+  }
+</style>

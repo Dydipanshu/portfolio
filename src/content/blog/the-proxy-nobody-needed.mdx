@@ -1,0 +1,26 @@
+---
+title: 'The proxy nobody needed'
+description: A short note on tracing a slow page load through a production request pipeline, and why the best performance fix is often deleting something.
+date: 2026-07-10
+draft: true
+---
+
+On the tax-filing platform I worked on this year, pages were loading slower than they should have. There was no single terrible query and no huge bundle. Everything was just a little slow, everywhere.
+
+## Follow one request all the way
+
+When the slowness is everywhere, the cause is usually something every request shares. So instead of profiling pages, I followed **one request** from the browser to the backend and wrote down every hop.
+
+One hop didn't earn its place. Requests went through a proxy layer that forwarded them to the API and added nothing on the way. It didn't cache, transform or authenticate anything.
+
+## Delete, then measure
+
+It had probably made sense at some point. By now it was just extra latency on every call.
+
+Removing it meant checking that nothing downstream depended on the headers or paths it rewrote, then pointing the client straight at the API. Every page on the platform got faster, because every page had been paying that toll.
+
+## What I took away
+
+- **Shared slowness means a shared cause.** Look at the pipeline before the pages.
+- **Draw the request path.** Writing every hop down makes the one that doesn't belong obvious.
+- **The cheapest code to run is code that isn't there.** Before optimising a layer, ask whether it needs to exist.

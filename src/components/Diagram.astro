@@ -1,0 +1,228 @@
+---
+import type { Diagram } from '../data/diagrams';
+
+interface Props {
+  diagram: Diagram;
+  id: string;
+}
+
+const { diagram, id } = Astro.props;
+const W = 480;
+const H_NODE = 32;
+const CHAR = 7.4; // approximate width of one mono character at 12px
+
+const nodes = diagram.nodes.map((n) => ({ ...n, w: Math.round(n.label.length * CHAR + 26), h: H_NODE }));
+const byId = Object.fromEntries(nodes.map((n) => [n.id, n]));
+
+// Where the line from a node's centre towards (dx, dy) leaves its box
+const exit = (n: (typeof nodes)[number], dx: number, dy: number, gap = 0) => {
+  const t = Math.min(dx ? (n.w / 2 + gap) / Math.abs(dx) : Infinity, dy ? (n.h / 2 + gap) / Math.abs(dy) : Infinity);
+  return [n.x + dx * t, n.y + dy * t];
+};
+
+const edges = diagram.edges.map((e) => {
+  const a = byId[e.from];
+  const b = byId[e.to];
+  const dx = b.x - a.x;
+  const dy = b.y - a.y;
+  const [x1, y1] = exit(a, dx, dy, 2);
+  const [x2, y2] = exit(b, -dx, -dy, 5);
+  const len = Math.hypot(dx, dy);
+  // Label sits beside the midpoint, nudged away from the line
+  const nx = -dy / len;
+  const ny = dx / len;
+  const flip = (ny > 0.2 || (Math.abs(ny) <= 0.2 && nx < 0) ? -1 : 1) * (e.flip ? -1 : 1);
+  const mx = (x1 + x2) / 2 + nx * 11 * flip;
+  const my = (y1 + y2) / 2 + ny * 11 * flip;
+  const anchor = Math.abs(dy) > Math.abs(dx) ? (nx * flip > 0 ? 'start' : 'end') : 'middle';
+  return { ...e, x1, y1, x2, y2, mx, my, anchor };
+});
+
+const tracePath = diagram.trace.map((nid, i) => `${i ? 'L' : 'M'}${byId[nid].x} ${byId[nid].y}`).join(' ');
+const traceLen = diagram.trace.slice(1).reduce((sum, nid, i) => {
+  const a = byId[diagram.trace[i]];
+  const b = byId[nid];
+  return sum + Math.hypot(b.x - a.x, b.y - a.y);
+}, 0);
+const duration = Math.max(3, traceLen / 110).toFixed(1);
+const f = (n: number) => Math.round(n * 10) / 10;
+---
+
+<figure class="diagram" data-diagram>
+  <div class="scroll">
+    <svg viewBox={`0 0 ${W} ${diagram.height}`} role="img" aria-labelledby={`${id}-cap`}>
+      <defs>
+        <marker id={`${id}-arrow`} viewBox="0 0 8 8" refX="7" refY="4" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M1 1 7 4 1 7" class="arrowhead"></path>
+        </marker>
+      </defs>
+
+      {diagram.notes?.map((n) => <text x={n.x} y={n.y} class="note">{n.text}</text>)}
+
+      {
+        edges.map((e) => (
+          <g class:list={['edge', { removed: e.removed }]} data-from={e.from} data-to={e.to}>
+            <line x1={f(e.x1)} y1={f(e.y1)} x2={f(e.x2)} y2={f(e.y2)} marker-end={e.removed ? undefined : `url(#${id}-arrow)`} />
+            {e.label && (
+              <text x={f(e.mx)} y={f(e.my)} text-anchor={e.anchor} dominant-baseline="middle" class="edge-label">
+                {e.label}
+              </text>
+            )}
+          </g>
+        ))
+      }
+
+      <circle r="3.5" class="packet">
+        <animateMotion dur={`${duration}s`} repeatCount="indefinite" path={tracePath} calcMode="paced"></animateMotion>
+      </circle>
+
+      {
+        nodes.map((n) => (
+          <g class:list={['node', { removed: n.removed }]} data-node={n.id}>
+            <rect x={f(n.x - n.w / 2)} y={f(n.y - n.h / 2)} width={n.w} height={n.h} rx="6" />
+            <text x={n.x} y={n.y} text-anchor="middle" dominant-baseline="central">
+              {n.label}
+            </text>
+            {n.removed && <line x1={n.x - n.w / 2 + 10} y1={n.y} x2={n.x + n.w / 2 - 10} y2={n.y} class="strike" />}
+          </g>
+        ))
+      }
+    </svg>
+  </div>
+  <figcaption id={`${id}-cap`}>{diagram.caption}</figcaption>
+</figure>
+
+<style>
+  .diagram {
+    margin-block: 2.5rem;
+  }
+
+  /* On narrow phones the drawing keeps a readable size and scrolls sideways instead of shrinking */
+  .scroll {
+    overflow-x: auto;
+    margin-inline: calc(-1 * var(--pad));
+    padding-inline: var(--pad);
+    scrollbar-width: none;
+  }
+
+  svg {
+    width: 100%;
+    min-width: 26rem;
+    height: auto;
+    overflow: visible;
+    font-family: var(--mono);
+  }
+
+  figcaption {
+    margin-top: 0.75rem;
+    font-size: 0.9em;
+    color: var(--ink-3);
+  }
+
+  .node rect {
+    fill: var(--bg);
+    stroke: color-mix(in oklab, var(--ink-3) 55%, transparent);
+    stroke-width: 1;
+  }
+
+  .node text {
+    font-size: 12px;
+    fill: var(--ink);
+  }
+
+  .node.removed rect {
+    stroke-dasharray: 3 3;
+  }
+
+  .node.removed text {
+    fill: var(--ink-3);
+  }
+
+  .strike {
+    stroke: var(--accent);
+    stroke-width: 1.25;
+  }
+
+  .edge line {
+    stroke: color-mix(in oklab, var(--ink-3) 70%, transparent);
+    stroke-width: 1;
+  }
+
+  .edge.removed line {
+    stroke-dasharray: 3 4;
+    opacity: 0.6;
+  }
+
+  .arrowhead {
+    fill: none;
+    stroke: color-mix(in oklab, var(--ink-3) 70%, transparent);
+    stroke-width: 1.2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .edge-label,
+  .note {
+    font-size: 10.5px;
+    fill: var(--ink-3);
+    paint-order: stroke;
+    stroke: var(--bg);
+    stroke-width: 4px;
+    stroke-linejoin: round;
+  }
+
+  .note {
+    dominant-baseline: hanging;
+  }
+
+  .packet {
+    fill: var(--accent);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .packet {
+      display: none;
+    }
+  }
+
+  /* Hovering a part keeps it and its direct connections in focus and fades the rest */
+  .node,
+  .edge {
+    transition: opacity 250ms var(--ease);
+  }
+
+  .node {
+    cursor: default;
+  }
+
+  svg:global(.focus) .node:not(:global(.on)),
+  svg:global(.focus) .edge:not(:global(.on)),
+  svg:global(.focus) .packet {
+    opacity: 0.2;
+  }
+</style>
+
+<script>
+  document.querySelectorAll<SVGSVGElement>('[data-diagram] svg').forEach((svg) => {
+    const nodes = svg.querySelectorAll<SVGGElement>('[data-node]');
+    const edges = svg.querySelectorAll<SVGGElement>('.edge');
+    nodes.forEach((node) => {
+      const id = node.dataset.node!;
+      node.addEventListener('pointerenter', () => {
+        svg.classList.add('focus');
+        node.classList.add('on');
+        edges.forEach((e) => {
+          const { from, to } = e.dataset;
+          if (from === id || to === id) {
+            e.classList.add('on');
+            svg.querySelector(`[data-node="${from === id ? to : from}"]`)?.classList.add('on');
+          }
+        });
+      });
+      node.addEventListener('pointerleave', () => {
+        svg.classList.remove('focus');
+        svg.querySelectorAll('.on').forEach((el) => el.classList.remove('on'));
+      });
+    });
+  });
+</script>

@@ -1,0 +1,39 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+
+const projects = (await getCollection('projects')).sort((a, b) => a.data.order - b.data.order);
+---
+
+<Base title="Work" description="Things Deepanshu Yadav has built: web apps, freelance work, hardware and scripts." og="projects">
+  <div class="page enter">
+    <h1>Work</h1>
+    <p class="intro">The bigger things I’ve built. Each one has a short write-up.</p>
+    <ul class="rows list">
+      {
+        projects.map((p) => (
+          <li>
+            <a href={`/projects/${p.id}`} class="row">
+              <span class="row-title">{p.data.title}</span>
+              <span class="row-line">{p.data.line}</span>
+              <span class="row-meta">{p.data.year}</span>
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+    <p class="after muted">Smaller things live in the <a href="/lab" class="u">lab</a>.</p>
+  </div>
+</Base>
+
+<style>
+  .intro {
+    margin-top: 0.5rem;
+  }
+  .list {
+    margin-top: 2.5rem;
+  }
+  .after {
+    margin-top: 2.5rem;
+  }
+</style>

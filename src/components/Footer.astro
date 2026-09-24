@@ -1,0 +1,64 @@
+<footer class="page footer no-print">
+  <p>
+    <time data-clock>Noida</time>
+    <span class="dot" aria-hidden="true">·</span>
+    <a href="/resume">Résumé</a>
+  </p>
+  <p class="hint">
+    <button type="button" data-palette-open>Press <kbd data-mod-key>Ctrl K</kbd> to jump around</button>
+  </p>
+</footer>
+
+<style>
+  .footer {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 0.5rem 1.5rem;
+    margin-top: 6rem;
+    padding-top: 1.5rem;
+    padding-bottom: max(2.5rem, env(safe-area-inset-bottom));
+    color: var(--ink-3);
+    font-size: 0.9em;
+  }
+
+  .dot {
+    margin-inline: 0.4rem;
+  }
+
+  a,
+  button {
+    transition: color 200ms;
+  }
+
+  a:hover,
+  button:hover {
+    color: var(--ink);
+  }
+
+  time {
+    font-variant-numeric: tabular-nums;
+  }
+
+  @media (hover: none) {
+    .hint {
+      display: none;
+    }
+  }
+</style>
+
+<script>
+  import { site } from '../data/site';
+  const el = document.querySelector<HTMLTimeElement>('[data-clock]');
+  if (el) {
+    const fmt = new Intl.DateTimeFormat('en-US', { hour: 'numeric', minute: '2-digit', timeZone: site.timezone });
+    const tick = () => {
+      el.textContent = `${fmt.format(new Date()).toLowerCase()} in Noida`;
+    };
+    tick();
+    setInterval(tick, 20_000);
+  }
+  if (/Mac|iPhone|iPad/.test(navigator.platform || navigator.userAgent)) {
+    document.querySelectorAll('[data-mod-key]').forEach((k) => (k.textContent = '⌘K'));
+  }
+</script>

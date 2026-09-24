@@ -1,0 +1,46 @@
+---
+title: 'Twenty minutes to one: building a tool people actually used'
+description: How a missing "download" button on a university portal turned into a small product used by 40+ students, and what it taught me about building for real users.
+date: 2025-12-02
+draft: true
+---
+
+Every semester, AKTU lets you *look* at your graded answer copies. It doesn't let you keep them. Looking meant about twenty minutes of paging through a slow portal, for each subject.
+
+That's the kind of problem I like: small, annoying and shared by everyone.
+
+## Start with the smallest thing that removes the pain
+
+The first version wasn't an app. It was a script that logged in, walked the pages and saved images. It worked for me, and it was useless to anyone else, because nobody wants to run a script.
+
+So the real work was taking everything the script knew and putting it behind **one button**:
+
+1. Log in once.
+2. Pick a course, then a subject.
+3. Get a single PDF.
+
+Each step hides something ugly: hidden form fields, cookies, dropdowns that change between semesters, images that sometimes fail to load. None of that is the user's problem.
+
+## Don't hard-code what the portal can tell you
+
+My first parser matched semester names exactly. Then the portal renamed one, and it broke.
+
+The fix was to stop assuming. The app now reads the options from the live page and auto-detects the evaluation level. The portal can change its labels and the tool keeps working.
+
+> If a value comes from a system you don't control, read it at runtime. Don't bake it in.
+
+## Show honest progress
+
+Stitching thirty images into a PDF takes a while. A spinner makes that feel broken. A counter reading **"18 / 30 pages"** makes it feel like it's working.
+
+So downloads run as background jobs, and the client polls for real progress. It's a tiny change and it did more for trust than anything else I shipped.
+
+## Make failures debuggable
+
+Every error carries a code and a request ID. When someone messaged me "it didn't work", I could ask for one string and find exactly what happened.
+
+## The result
+
+Retrieval went from roughly **20 minutes to under a minute**, and more than 40 students have used it. What I'm proudest of is that the whole thing collapsed into a single action.
+
+The lesson I keep coming back to: the technical part was the easy half. The work was in deleting every step between the user and what they wanted.

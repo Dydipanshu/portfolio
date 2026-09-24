@@ -1,0 +1,105 @@
+---
+import { getCollection } from 'astro:content';
+import Base from '../layouts/Base.astro';
+import Signal from '../components/Signal.astro';
+import CopyEmail from '../components/CopyEmail.astro';
+import { site, paper } from '../data/site';
+
+const featured = (await getCollection('projects', ({ data }) => data.featured)).sort((a, b) => a.data.order - b.data.order);
+const posts = (await getCollection('blog', ({ data }) => !data.draft)).sort((a, b) => +b.data.date - +a.data.date).slice(0, 3);
+---
+
+<Base>
+  <div class="page enter">
+    <h1>Hi, I’m Deepanshu Yadav.</h1>
+    <p class="gap">
+      I’m a software engineer in Noida, and I mostly work on backends: APIs, data models, background jobs, and working
+      out why a request is slow. Now and then I write firmware for small ESP32 boards too.
+    </p>
+    <p class="gap">
+      I studied electrical engineering and graduated in 2026. This year I was part of a small team building <a
+        href="/projects/2020tax"
+        class="u">2020Tax.ie</a
+      >, an Irish tax-filing site. I worked on both the Next.js front end and the FastAPI backend, and removed a proxy
+      that was slowing down every request. Before that I built a few tools for students at my university, and co-wrote
+      a <a href={paper.url} class="u" target="_blank" rel="noopener">paper</a> on finding faults in power grids with deep
+      learning.
+    </p>
+    <p class="gap">
+      I’m looking for a full-time backend or infrastructure role. If you’re hiring, the Contact button at the top is
+      the quickest way to reach me.
+    </p>
+
+    <Signal />
+
+    <section class="section" aria-labelledby="built">
+      <h2 id="built" class="label">Things I’ve built</h2>
+      <ul class="rows">
+        {
+          featured.map((p) => (
+            <li>
+              <a href={`/projects/${p.id}`} class="row">
+                <span class="row-title">{p.data.title}</span>
+                <span class="row-line">{p.data.line}</span>
+                <span class="row-meta">{p.data.year}</span>
+              </a>
+            </li>
+          ))
+        }
+      </ul>
+      <p class="more"><a href="/projects" class="u">More work</a> and <a href="/lab" class="u">smaller experiments</a></p>
+    </section>
+
+    {
+      posts.length > 0 && (
+        <section class="section" aria-labelledby="writing">
+          <h2 id="writing" class="label">Writing</h2>
+          <ul class="rows">
+            {posts.map((p) => (
+              <li>
+                <a href={`/blog/${p.id}`} class="row">
+                  <span class="row-title">{p.data.title}</span>
+                  <span class="row-line" />
+                  <time class="row-meta" datetime={p.data.date.toISOString()}>
+                    {p.data.date.toLocaleDateString('en-GB', { month: 'short', year: 'numeric', timeZone: 'UTC' })}
+                  </time>
+                </a>
+              </li>
+            ))}
+          </ul>
+        </section>
+      )
+    }
+
+    <section class="section" aria-labelledby="contact">
+      <h2 id="contact" class="label">Say hello</h2>
+      <p>
+        <CopyEmail />
+      </p>
+      <p class="links">
+        <a href={site.socials.github} class="u" target="_blank" rel="me noopener">GitHub</a>
+        <a href={site.socials.linkedin} class="u" target="_blank" rel="me noopener">LinkedIn</a>
+        <a href={site.socials.scholar} class="u" target="_blank" rel="me noopener">Google Scholar</a>
+        <a href="/resume" class="u">Résumé</a>
+      </p>
+    </section>
+  </div>
+</Base>
+
+<style>
+  .gap {
+    margin-top: 1rem;
+  }
+
+  .more {
+    margin-top: 0.75rem;
+    color: var(--ink-3);
+  }
+
+  .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem 1.25rem;
+    margin-top: 0.5rem;
+  }
+</style>

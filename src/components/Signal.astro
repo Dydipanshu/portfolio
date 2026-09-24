@@ -1,0 +1,349 @@
+---
+// A line where every point runs its own PID loop toward a slowly drifting target,
+// with a small self-balancing robot riding on it that follows the cursor.
+// The robot is a simulated inverted pendulum on wheels: it can only stay up by
+// driving its wheels under its own lean, the same problem as the real one I built.
+---
+
+<figure class="signal" data-signal>
+  <canvas aria-hidden="true"></canvas>
+  <figcaption>
+    A tiny version of my self-balancing robot. It stays upright with a PID loop and <span class="fine"
+      >follows your cursor</span
+    ><span class="touch">follows your finger</span>. The line is held in place by PID loops too, so you can push it
+    around.
+  </figcaption>
+</figure>
+
+<style>
+  .signal {
+    margin-top: 2rem;
+  }
+
+  canvas {
+    width: calc(100% + 2 * var(--pad));
+    max-width: none;
+    margin-inline: calc(-1 * var(--pad));
+    height: 130px;
+    touch-action: pan-y;
+  }
+
+  figcaption {
+    margin-top: 0.25rem;
+    font-size: 0.9em;
+    color: var(--ink-3);
+    max-width: 30rem;
+  }
+
+  .touch {
+    display: none;
+  }
+
+  @media (hover: none) {
+    .fine {
+      display: none;
+    }
+    .touch {
+      display: inline;
+    }
+  }
+</style>
+
+<script>
+  const fig = document.querySelector<HTMLElement>('[data-signal]');
+  const canvas = fig?.querySelector('canvas');
+  const ctx = canvas?.getContext('2d');
+
+  if (fig && canvas && ctx) {
+    const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const DT = 1 / 60;
+
+    // Line: one PID loop per point
+    const KP = 0.09;
+    const KI = 0.002;
+    const KD = 0.34;
+    const COUPLING = 0.22; // neighbours pull on each other, so a push travels along the line
+    const SPACING = 5;
+
+    let w = 0;
+    let h = 0;
+    let base = 0; // resting height of the line
+    let n = 0;
+    let y: Float32Array, v: Float32Array, integ: Float32Array, prevErr: Float32Array;
+    let t = 0;
+    let running = false;
+    let visible = true;
+    let colors = { ink: '#000', ink3: '#777', bg: '#fff', accent: '#f60' };
+    const pointer = { x: -1, y: -1, px: -1, py: -1, over: false };
+
+    // Robot: position and speed along the line, lean angle (0 = upright, + = leaning right)
+    const WHEEL = 8;
+    const BODY = 38; // axle to top of body
+    const PEND = 16; // pendulum length used by the physics
+    const G = 2200;
+    const bot = { x: 0, v: 0, th: 0, om: 0, wheel: 0, target: -1, moved: false };
+
+    const readColors = () => {
+      const cs = getComputedStyle(document.documentElement);
+      colors = {
+        ink: cs.getPropertyValue('--ink').trim(),
+        ink3: cs.getPropertyValue('--ink-3').trim(),
+        bg: cs.getPropertyValue('--bg').trim(),
+        accent: cs.getPropertyValue('--accent').trim(),
+      };
+    };
+
+    const setpoint = (i: number, time: number) => {
+      const x = i / n;
+      const env = Math.sin(Math.PI * x) ** 1.5; // edges stay still
+      return env * 30 * (0.28 * Math.sin(x * 7 + time * 0.6) + 0.12 * Math.sin(x * 19 - time * 1.1) + 0.05 * Math.sin(x * 41 + time * 1.7));
+    };
+
+    const lineY = (x: number) => {
+      const f = Math.max(0, Math.min(n, (x / w) * n));
+      const i = Math.floor(f);
+      const j = Math.min(n, i + 1);
+      return base + y[i] + (y[j] - y[i]) * (f - i);
+    };
+
+    const resize = () => {
+      const r = canvas.getBoundingClientRect();
+      const dpr = Math.min(window.devicePixelRatio || 1, 2);
+      const first = w === 0;
+      w = r.width;
+      h = r.height;
+      base = h * 0.66;
+      canvas.width = Math.round(w * dpr);
+      canvas.height = Math.round(h * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      const nn = Math.max(20, Math.floor(w / SPACING));
+      if (nn !== n) {
+        n = nn;
+        y = new Float32Array(n + 1);
+        v = new Float32Array(n + 1);
+        integ = new Float32Array(n + 1);
+        prevErr = new Float32Array(n + 1);
+        for (let i = 0; i <= n; i++) y[i] = setpoint(i, t);
+      }
+      if (first) {
+        bot.x = w * 0.2;
+        bot.target = bot.x;
+      }
+      bot.x = Math.min(bot.x, w - 22);
+      if (reduce) draw();
+    };
+
+    const stepLine = () => {
+      for (let i = 1; i < n; i++) {
+        const err = setpoint(i, t) - y[i];
+        integ[i] = Math.max(-40, Math.min(40, integ[i] + err));
+        const deriv = err - prevErr[i];
+        prevErr[i] = err;
+        const u = KP * err + KI * integ[i] + KD * deriv;
+        const neighbours = (y[i - 1] + y[i + 1]) / 2 - y[i];
+        v[i] = (v[i] + u + COUPLING * neighbours) * 0.9;
+      }
+
+      // The robot's weight presses the line down a little where it stands
+      const bi = Math.round((bot.x / w) * n);
+      for (let k = -3; k <= 3; k++) {
+        const i = bi + k;
+        if (i > 0 && i < n) v[i] += 0.35 * Math.exp(-(k * k) / 4);
+      }
+
+      for (let i = 1; i < n; i++) y[i] += v[i];
+
+      // Sweeping the pointer across the line pushes it
+      if (pointer.over && pointer.px >= 0) {
+        const dy = pointer.y - pointer.py;
+        const speed = Math.hypot(pointer.x - pointer.px, dy);
+        const idx = Math.round((pointer.x / w) * n);
+        const radius = 7;
+        for (let k = -radius; k <= radius; k++) {
+          const i = idx + k;
+          if (i <= 0 || i >= n) continue;
+          const fall = Math.exp(-(k * k) / (radius * 2));
+          const rel = pointer.y - base - y[i];
+          const near = Math.max(0, 1 - Math.abs(rel) / 40);
+          v[i] += (dy * 0.55 + Math.sign(rel || 1) * speed * 0.12) * fall * near;
+        }
+      }
+      pointer.px = pointer.x;
+      pointer.py = pointer.y;
+    };
+
+    // Three nested loops, like the real robot:
+    //   position error -> wanted speed -> wanted lean -> wheel acceleration (PD on the lean)
+    const stepBot = () => {
+      const margin = 22;
+      const target = Math.max(margin, Math.min(w - margin, bot.target));
+      const ex = target - bot.x;
+      const vWant = Math.abs(ex) < 3 ? 0 : Math.max(-240, Math.min(240, ex * 1.8));
+      const thWant = Math.max(-0.38, Math.min(0.38, (vWant - bot.v) * 0.003));
+
+      // Pick the wheel acceleration that makes the lean behave like a damped spring toward thWant
+      const kp = 170;
+      const kd = 24;
+      const s = Math.sin(bot.th);
+      const c = Math.cos(bot.th);
+      const acc = (PEND * (kp * (bot.th - thWant) + kd * bot.om) + G * s) / c;
+      const a = Math.max(-2600, Math.min(2600, acc));
+
+      // Inverted pendulum on a cart
+      const alpha = (G * s - a * c) / PEND;
+      bot.om += alpha * DT;
+      bot.th += bot.om * DT;
+      bot.th = Math.max(-1.1, Math.min(1.1, bot.th));
+      bot.v += a * DT;
+      bot.v *= 0.995;
+      bot.x += bot.v * DT;
+      if (bot.x < margin || bot.x > w - margin) {
+        bot.x = Math.max(margin, Math.min(w - margin, bot.x));
+        bot.v *= -0.2;
+      }
+      bot.wheel += (bot.v * DT) / WHEEL;
+    };
+
+    const drawRobot = () => {
+      const gx = bot.x;
+      const gy = lineY(gx);
+      // Tilt the wheel contact slightly with the slope under it
+      const slope = Math.atan2(lineY(gx + 4) - lineY(gx - 4), 8);
+      const ax = gx - Math.sin(slope) * WHEEL;
+      const ay = gy - Math.cos(slope) * WHEEL;
+
+      ctx.save();
+      ctx.translate(ax, ay);
+
+      // Body, rotated by the lean
+      ctx.save();
+      ctx.rotate(bot.th);
+      ctx.fillStyle = colors.bg;
+      ctx.strokeStyle = colors.ink;
+      ctx.lineWidth = 1.25;
+      ctx.beginPath();
+      ctx.roundRect(-7, -BODY, 14, BODY - 1, 3.5);
+      ctx.fill();
+      ctx.stroke();
+      // Shelves, like the stacked boards on a real balancing bot
+      ctx.beginPath();
+      ctx.moveTo(-7, -BODY * 0.66);
+      ctx.lineTo(7, -BODY * 0.66);
+      ctx.moveTo(-7, -BODY * 0.33);
+      ctx.lineTo(7, -BODY * 0.33);
+      ctx.stroke();
+      // Status light
+      ctx.fillStyle = colors.accent;
+      ctx.beginPath();
+      ctx.arc(0, -BODY + 6, 2, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.restore();
+
+      // Wheel, with spokes so you can see it turn
+      ctx.fillStyle = colors.bg;
+      ctx.strokeStyle = colors.ink;
+      ctx.lineWidth = 1.25;
+      ctx.beginPath();
+      ctx.arc(0, 0, WHEEL, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.stroke();
+      ctx.save();
+      ctx.rotate(bot.wheel);
+      ctx.strokeStyle = colors.ink3;
+      ctx.beginPath();
+      for (let k = 0; k < 3; k++) {
+        const a = (k * Math.PI * 2) / 3;
+        ctx.moveTo(0, 0);
+        ctx.lineTo(Math.cos(a) * (WHEEL - 1.5), Math.sin(a) * (WHEEL - 1.5));
+      }
+      ctx.stroke();
+      ctx.restore();
+      ctx.fillStyle = colors.ink;
+      ctx.beginPath();
+      ctx.arc(0, 0, 1.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.restore();
+    };
+
+    const draw = () => {
+      ctx.clearRect(0, 0, w, h);
+
+      ctx.lineWidth = 1.25;
+      ctx.lineJoin = 'round';
+      ctx.strokeStyle = colors.ink;
+      ctx.beginPath();
+      for (let i = 0; i <= n; i++) {
+        const x = (i / n) * w;
+        const yy = base + y[i];
+        i ? ctx.lineTo(x, yy) : ctx.moveTo(x, yy);
+      }
+      ctx.stroke();
+
+      drawRobot();
+    };
+
+    const loop = () => {
+      if (!running) return;
+      t += DT;
+      stepLine();
+      stepBot();
+      draw();
+      requestAnimationFrame(loop);
+    };
+
+    const start = () => {
+      if (reduce || running || !visible || document.hidden) return;
+      running = true;
+      requestAnimationFrame(loop);
+    };
+    const stop = () => (running = false);
+
+    // The robot follows the pointer anywhere on the page; the line only reacts when you're over it
+    const follow = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      bot.target = e.clientX - r.left;
+      bot.moved = true;
+    };
+    window.addEventListener('pointermove', follow, { passive: true });
+    window.addEventListener('pointerdown', follow, { passive: true });
+
+    const onCanvas = (e: PointerEvent) => {
+      const r = canvas.getBoundingClientRect();
+      pointer.x = e.clientX - r.left;
+      pointer.y = e.clientY - r.top;
+      if (!pointer.over) {
+        pointer.px = pointer.x;
+        pointer.py = pointer.y;
+      }
+      pointer.over = true;
+    };
+    canvas.addEventListener('pointermove', onCanvas);
+    canvas.addEventListener('pointerdown', onCanvas);
+    canvas.addEventListener('pointerleave', () => {
+      pointer.over = false;
+      pointer.px = -1;
+    });
+
+    readColors();
+    resize();
+    new ResizeObserver(resize).observe(canvas);
+    window.addEventListener('themechange', () =>
+      requestAnimationFrame(() => {
+        readColors();
+        if (reduce) draw();
+      }),
+    );
+    matchMedia('(prefers-color-scheme: dark)').addEventListener('change', readColors);
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      visible ? start() : stop();
+    }).observe(canvas);
+    document.addEventListener('visibilitychange', () => (document.hidden ? stop() : start()));
+
+    // On arrival the robot rolls out a little way, so it's clear it can move
+    if (!reduce) setTimeout(() => !bot.moved && (bot.target = w * 0.5), 800);
+    start();
+  }
+</script>
