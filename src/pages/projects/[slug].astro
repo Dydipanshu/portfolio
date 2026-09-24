@@ -21,7 +21,7 @@ interface Props {
 const { project, next } = Astro.props;
 const { Content } = await render(project);
 const { title, line, year, kind, stack, links } = project.data;
-const url = new URL(Astro.url.pathname, Astro.site).href;
+const url = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/'), Astro.site).href;
 const diagram = diagrams[project.id];
 
 const jsonLd = [

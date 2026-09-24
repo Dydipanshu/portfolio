@@ -32,7 +32,7 @@ const {
 } = Astro.props;
 
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name}, ${site.headline.toLowerCase()}`;
-const canonical = new URL(Astro.url.pathname, Astro.site);
+const canonical = new URL(Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/'), Astro.site);
 const ogImage = new URL(`/og/${og}.png`, Astro.site);
 
 const personLd = {
@@ -62,7 +62,7 @@ const websiteLd = {
 };
 
 // The Person goes on every page so search engines always connect the site to one person.
-const isHome = Astro.url.pathname === '/' || Astro.url.pathname === '';
+const isHome = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') === '/' || Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/') === '';
 const ld = [personLd, ...(isHome ? [websiteLd] : []), ...(jsonLd ? (Array.isArray(jsonLd) ? jsonLd : [jsonLd]) : [])];
 ---
 

@@ -3,7 +3,7 @@ import { nav, site } from '../data/site';
 import ThemeToggle from './ThemeToggle.astro';
 import Contact from './Contact.astro';
 
-const path = Astro.url.pathname.replace(/\/$/, '') || '/';
+const path = Astro.url.pathname.replace(/\.html$/, '').replace(/\/index$/, '/').replace(/\/$/, '') || '/';
 const isActive = (href: string) => path === href || path.startsWith(`${href}/`);
 ---
 
