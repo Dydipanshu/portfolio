@@ -73,6 +73,7 @@
     let t = 0;
     let running = false;
     let visible = true;
+    let lastInput = -1e9;
     let colors = { ink: '#000', ink3: '#777', bg: '#fff', accent: '#f60' };
     const pointer = { x: -1, y: -1, px: -1, py: -1, over: false };
 
@@ -283,9 +284,18 @@
       drawRobot();
     };
 
+    // With reduced motion the scene only moves while you are moving it, and the line stops drifting
+    const awake = () =>
+      !reduce || performance.now() - lastInput < 1500 || Math.abs(bot.v) > 2 || Math.abs(bot.om) > 0.05;
+
     const loop = () => {
       if (!running) return;
-      t += DT;
+      if (!awake()) {
+        running = false;
+        draw();
+        return;
+      }
+      if (!reduce) t += DT;
       stepLine();
       stepBot();
       draw();
@@ -293,7 +303,7 @@
     };
 
     const start = () => {
-      if (reduce || running || !visible || document.hidden) return;
+      if (running || !visible || document.hidden || !awake()) return;
       running = true;
       requestAnimationFrame(loop);
     };
@@ -304,6 +314,8 @@
       const r = canvas.getBoundingClientRect();
       bot.target = e.clientX - r.left;
       bot.moved = true;
+      lastInput = performance.now();
+      start();
     };
     window.addEventListener('pointermove', follow, { passive: true });
     window.addEventListener('pointerdown', follow, { passive: true });
@@ -317,6 +329,8 @@
         pointer.py = pointer.y;
       }
       pointer.over = true;
+      lastInput = performance.now();
+      start();
     };
     canvas.addEventListener('pointermove', onCanvas);
     canvas.addEventListener('pointerdown', onCanvas);
