@@ -30,8 +30,8 @@ export const nav = [
 export const experience = [
   {
     company: '2020Tax.ie',
-    url: 'https://www.2020tax.ie',
-    role: 'Full-stack developer, freelance',
+    url: '',
+    role: 'Full-stack developer, freelance (the company has since closed)',
     period: 'Apr – Jun 2026',
     points: [
       'Built the front end of the tax-filing flow in Next.js, TypeScript and Redux. It’s a long form where later questions depend on earlier answers, with a lot of validation along the way.',
