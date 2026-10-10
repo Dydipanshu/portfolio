@@ -7,7 +7,7 @@ stack: [Next.js, TypeScript, Tambo]
 links:
   - { label: Live demo, href: 'https://nebulasentinel.vercel.app' }
   - { label: Source, href: 'https://github.com/Dydipanshu/ui-whisperer' }
-order: 5
+order: 7
 ---
 
 Built for a WeMakeDevs hackathon.

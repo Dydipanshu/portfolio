@@ -6,7 +6,7 @@ kind: Script
 stack: [TypeScript, Node.js, Cheerio, MongoDB]
 links:
   - { label: Source, href: 'https://github.com/Dydipanshu/AKTU-DOB-FINDER' }
-order: 4
+order: 6
 ---
 
 Someone was copying student records out of the university portal by hand, one roll number at a time. It was taking days.

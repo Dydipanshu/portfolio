@@ -3,9 +3,9 @@
 export const site = {
   name: 'Deepanshu Yadav',
   role: 'Software engineer',
-  headline: 'Backend software engineer',
+  headline: 'Software engineer, backend and AI',
   description:
-    'Deepanshu Yadav is a software engineer in Noida, India, looking for backend and infrastructure roles. APIs in FastAPI and Node.js, PostgreSQL, background jobs, and a published paper on power grids.',
+    'Deepanshu Yadav is a software engineer in Noida, India. He evaluates frontier AI models at Handshake AI, builds backends in FastAPI and Node.js, and ships small products like USGScribe. Published paper on power grids.',
   handle: 'dydipanshu',
   // Visitor stats at https://dydipanshu.goatcounter.com (free, no cookies). Set to '' to turn off.
   goatcounter: 'dydipanshu',
@@ -29,6 +29,17 @@ export const nav = [
 
 export const experience = [
   {
+    company: 'Handshake AI',
+    url: 'https://joinhandshake.com',
+    role: 'AI evaluation contractor',
+    period: 'Jul 2025 – now',
+    points: [
+      'I write benchmark tasks on real codebases that find where frontier AI models fail. Each task has a verifier that decides pass or fail with no human judge, and that catches shortcut answers.',
+      'Every task goes through automated CI checks and an outside rubric review. When a check fails, I find out why and fix it in a pull request.',
+      'I also graded model answers against quality rubrics and wrote up the failures, which went back into improving the models.',
+    ],
+  },
+  {
     company: '2020Tax.ie',
     url: 'https://www.2020tax.ie',
     role: 'Full-stack developer, freelance',
@@ -37,6 +48,15 @@ export const experience = [
       'Built the front end of the tax-filing flow in Next.js, TypeScript and Redux. It’s a long form where later questions depend on earlier answers, with a lot of validation along the way.',
       'Worked with the team on the data model for the FastAPI backend.',
       'Pages were loading slowly because every request went through a proxy that didn’t do anything. I took it out and the whole site got faster.',
+    ],
+  },
+  {
+    company: 'SB Technosoft',
+    url: '',
+    role: 'Web developer intern',
+    period: 'Jun – Jul 2025',
+    points: [
+      'The only developer on a client website. I gathered what the client wanted, showed them each version, and shipped it on time.',
     ],
   },
 ] as const;
@@ -48,11 +68,12 @@ export const education = {
 };
 
 export const skills = [
+  ['AI', 'LLM evaluation, LLM-as-judge, OpenAI API, embeddings and retrieval, PyTorch, scikit-learn'],
   ['Backend', 'Python, FastAPI, Node.js, TypeScript, REST APIs, JWT auth, PostgreSQL, MySQL, MongoDB'],
   ['Infrastructure', 'Linux, Git, GitHub Actions, AWS (EC2, S3, RDS), Vercel, Netlify'],
   ['Front end', 'React, Next.js, Redux'],
   ['Hardware', 'C and C++ on ESP32 and Arduino, sensors, GSM and GPS modules, PID control'],
-  ['Some ML', 'PyTorch, NumPy, pandas, MATLAB'],
+  ['Data', 'pandas, NumPy, browser automation, MATLAB'],
 ] as const;
 
 export const paper = {

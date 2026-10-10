@@ -15,8 +15,8 @@ const jsonLd = {
     <h1>About</h1>
     <p class="first">
       I studied electrical engineering, and I still like working with hardware. But somewhere in college I started
-      building software for the web, first for myself and then for other people. These days I mostly work on the
-      backend side of things, and that’s what I want to do full time.
+      building software for the web, first for myself and then for other people. These days I work on backends and on
+      AI: building things with language models, and testing whether they actually work.
     </p>
     <p class="gap">
       I was raised by my mother, on her own. She’s the strongest person I know, and most of what I believe about hard
@@ -30,11 +30,15 @@ const jsonLd = {
       <h2 id="work" class="label">Work</h2>
       {
         experience.map((job) => (
-          <div>
+          <div class="job">
             <p class="head">
-              <a href={job.url} class="u" target="_blank" rel="noopener">
-                {job.company}
-              </a>
+              {job.url ? (
+                <a href={job.url} class="u" target="_blank" rel="noopener">
+                  {job.company}
+                </a>
+              ) : (
+                <span class="ink">{job.company}</span>
+              )}
               <span class="muted">{job.period}</span>
             </p>
             <p class="muted">{job.role}</p>
@@ -128,6 +132,10 @@ const jsonLd = {
 
   .ink {
     color: var(--ink);
+  }
+
+  .job + .job {
+    margin-top: 1.75rem;
   }
 
   .points {

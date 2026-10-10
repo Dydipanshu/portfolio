@@ -4,8 +4,7 @@ line: A box that texts your location to family after a crash
 year: '2024'
 kind: Hardware
 stack: [ESP32, Embedded C, SIM800L, GPS]
-featured: true
-order: 3
+order: 5
 ---
 
 A small device for a vehicle. When it detects a crash, it reads its GPS position and sends it by SMS to a few saved numbers. The message goes out within five seconds.

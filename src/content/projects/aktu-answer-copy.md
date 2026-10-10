@@ -8,7 +8,7 @@ links:
   - { label: aktucopy.vercel.app, href: 'https://aktucopy.vercel.app' }
   - { label: Source, href: 'https://github.com/Dydipanshu/AktuAnswerCopy' }
 featured: true
-order: 1
+order: 4
 ---
 
 My university, AKTU, lets you look at your checked answer sheets online, but there's no way to download them. If you wanted a copy, you went through it page by page and saved each image yourself. That took about twenty minutes per subject.
