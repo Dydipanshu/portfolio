@@ -5,7 +5,7 @@ year: '2026'
 kind: Product
 stack: [TypeScript, React, Electron, Whisper, Vercel]
 links:
-  - { label: usgscribe.vercel.app, href: 'https://usgscribe.vercel.app' }
+  - { label: usgscribe.tunedloop.com, href: 'https://usgscribe.tunedloop.com' }
   - { label: Windows app, href: 'https://github.com/Dydipanshu/usgscribe-desktop/releases/latest' }
   - { label: Source, href: 'https://github.com/Dydipanshu/medical-dict' }
 featured: true
