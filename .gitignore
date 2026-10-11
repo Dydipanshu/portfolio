@@ -22,3 +22,6 @@ pnpm-debug.log*
 
 # jetbrains setting folder
 .idea/
+
+# resume build output (the published copy is public/Deepanshu_Yadav_Resume.pdf)
+resume/*.pdf

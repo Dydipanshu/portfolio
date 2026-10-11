@@ -11,7 +11,7 @@ const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/,
   <div class="page enter">
     <p class="tools no-print">
       <a href="/about" class="back">← About</a>
-      <button type="button" class="u" data-print>Save as PDF</button>
+      <a href={site.resumePdf} class="btn" download data-goatcounter-click="resume-download" data-goatcounter-title="Résumé page">Download PDF</a>
     </p>
 
     <article class="cv">
@@ -69,13 +69,6 @@ const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/,
         <p><a href={paper.url} class="ink">{paper.title}</a>, {paper.venue}</p>
       </section>
 
-      <section>
-        <h2>Education</h2>
-        <p class="head">
-          <span class="ink">{education.degree}, {education.school}</span>
-          <span class="muted">{education.period}</span>
-        </p>
-      </section>
 
       <section>
         <h2>Skills</h2>
@@ -86,6 +79,14 @@ const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/,
         <h2>Also</h2>
         <ul>{honours.map((h) => <li>{h}</li>)}</ul>
       </section>
+
+      <section>
+        <h2>Education</h2>
+        <p class="head">
+          <span class="ink">{education.degree}, {education.school}</span>
+          <span class="muted">{education.period}</span>
+        </p>
+      </section>
     </article>
   </div>
 </Base>
@@ -95,6 +96,23 @@ const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/,
     display: flex;
     justify-content: space-between;
     margin-bottom: 2rem;
+  }
+
+  .tools {
+    align-items: center;
+  }
+
+  .btn {
+    padding: 0.4rem 0.9rem;
+    border-radius: 999px;
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 500;
+    transition: opacity 200ms;
+  }
+
+  .btn:hover {
+    opacity: 0.85;
   }
 
   .back {
@@ -180,6 +198,3 @@ const host = (u: string) => u.replace(/^https?:\/\/(www\.)?/, '').replace(/\/$/,
   }
 </style>
 
-<script>
-  document.querySelector('[data-print]')?.addEventListener('click', () => window.print());
-</script>

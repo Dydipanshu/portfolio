@@ -1,0 +1,160 @@
+\documentclass[a4paper,11pt]{article}
+
+\usepackage{latexsym}
+\usepackage[empty]{fullpage}
+\usepackage{titlesec}
+\usepackage[usenames,dvipsnames]{color}
+\usepackage{enumitem}
+\usepackage[hidelinks]{hyperref}
+\usepackage{fancyhdr}
+\usepackage[english]{babel}
+\usepackage{tabularx}
+\usepackage{fontspec}
+\defaultfontfeatures{Kerning=Off}
+\setmainfont{lmroman10}[Extension=.otf, UprightFont=*-regular, BoldFont=*-bold, ItalicFont=*-italic, BoldItalicFont=*-bolditalic, SmallCapsFont=lmromancaps10-regular, Kerning=Off]
+
+\hypersetup{pdftitle={Deepanshu Yadav, Resume}, pdfauthor={Deepanshu Yadav}}
+
+\pagestyle{fancy}
+\fancyhf{}
+\fancyfoot{}
+\renewcommand{\headrulewidth}{0pt}
+\renewcommand{\footrulewidth}{0pt}
+
+\addtolength{\oddsidemargin}{-0.62in}
+\addtolength{\evensidemargin}{-0.62in}
+\addtolength{\textwidth}{1.24in}
+\addtolength{\topmargin}{-.65in}
+\addtolength{\textheight}{1.35in}
+
+\urlstyle{same}
+\raggedbottom
+\raggedright
+\setlength{\tabcolsep}{0in}
+
+\titleformat{\section}{
+  \vspace{-4pt}\scshape\raggedright\large
+}{}{0em}{}[\color{black}\titlerule \vspace{-5pt}]
+
+\newcommand{\resumeItem}[1]{
+  \item\small{
+    {#1 \vspace{-2pt}}
+  }
+}
+
+\newcommand{\resumeSubheading}[4]{
+  \vspace{-2pt}\item
+    \begin{tabular*}{0.97\textwidth}[t]{l@{\extracolsep{\fill}}r}
+      \textbf{#1} & #2 \\
+      \textit{\small#3} & \textit{\small #4} \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\newcommand{\resumeProjectHeading}[2]{
+    \item
+    \begin{tabular*}{0.97\textwidth}{l@{\extracolsep{\fill}}r}
+      \small#1 & #2 \\
+    \end{tabular*}\vspace{-7pt}
+}
+
+\renewcommand\labelitemii{$\vcenter{\hbox{\tiny$\bullet$}}$}
+
+\newcommand{\resumeSubHeadingListStart}{\begin{itemize}[leftmargin=0.15in, label={}]}
+\newcommand{\resumeSubHeadingListEnd}{\end{itemize}}
+\newcommand{\resumeItemListStart}{\begin{itemize}}
+\newcommand{\resumeItemListEnd}{\end{itemize}\vspace{-5pt}}
+
+\begin{document}
+
+\begin{center}
+    \textbf{\Huge \scshape Deepanshu Yadav} \\ \vspace{1pt}
+    \small +91-93512-73050 $|$ \href{mailto:dydipanshu2004@gmail.com}{\underline{dydipanshu2004@gmail.com}} $|$ Noida, India \\
+    \href{https://dydipanshu.online}{\underline{dydipanshu.online}} $|$
+    \href{https://linkedin.com/in/dydipanshu}{\underline{linkedin.com/in/dydipanshu}} $|$
+    \href{https://github.com/dydipanshu}{\underline{github.com/dydipanshu}}
+\end{center}
+
+\section{Experience}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {Full-Stack Developer (Freelance)}{Apr 2026 -- Jun 2026}
+      {2020Tax.ie, Irish tax-filing startup (since closed)}{Remote}
+      \resumeItemListStart
+        \resumeItem{Built the tax-filing front end in \textbf{Next.js, TypeScript and Redux}: a long multi-step form where later questions depend on earlier answers, with field-level validation so people with no tax background could file alone.}
+        \resumeItem{Turned tax-claim rules into \textbf{FastAPI} data models and kept the REST contract in sync with the client.}
+        \resumeItem{Traced slow page loads to a proxy layer that added nothing and removed it, speeding up every request.}
+      \resumeItemListEnd
+    \resumeSubheading
+      {Web Developer Intern}{Jun 2025 -- Jul 2025}
+      {SB Technosoft}{Bharatpur, India}
+      \resumeItemListStart
+        \resumeItem{Sole developer on a client website: gathered requirements, ran client review rounds and shipped on schedule.}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+\section{Projects}
+    \resumeSubHeadingListStart
+      \resumeProjectHeading
+          {\textbf{USGScribe} $|$ \emph{TypeScript, React, Electron, Node.js, Whisper, Claude API} $|$ \href{https://usgscribe.tunedloop.com}{\underline{usgscribe.tunedloop.com}}}{2026}
+          \resumeItemListStart
+            \resumeItem{Voice dictation for ultrasound reports, live in production: an \textbf{Electron} tray app types into MS Word and restores the user's clipboard, and a web editor adds templates, printing and .docx export.}
+            \resumeItem{Audio is cut at natural pauses and sent to \textbf{Whisper} through a serverless API with a per-IP rate limit; queued segments are merged into one request to stay inside the 2,000 requests/day free tier.}
+            \resumeItem{Wrote a unit-tested TypeScript core shared by both apps that turns speech into report text: spoken measurements (``10.2 by 4.5 centimetres'' to 10.2 x 4.5 cm), voice commands and phrase macros.}
+            \resumeItem{Added AI report structuring with \textbf{Claude} tool use; a deterministic checker reverts any line containing a number the doctor never said, and nothing changes until the doctor approves.}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\textbf{Support Triage Agent} $|$ \emph{Python, OpenAI API, Embeddings, pandas, scikit-learn} $|$ \href{https://github.com/dydipanshu/support-triage-agent}{\underline{GitHub}}}{2026}
+          \resumeItemListStart
+            \resumeItem{Agent that classifies airline support messages into 9 intents, drafts replies grounded in \textbf{23,000+} past threads via embedding retrieval, and routes each to auto-reply or a human with a named reason.}
+            \resumeItem{Fixed rules for money, personal data, legal, medical and hostile messages that the model cannot override: \textbf{94\% escalation recall} and 3 unsafe auto-replies out of 51, against 34 for a TF-IDF and keyword baseline.}
+            \resumeItem{Built the evaluation: a 220-example hand-labelled golden set, two baselines, and an LLM judge checked against blind human scores (Spearman 0.72); cached model calls make every number reproducible in CI.}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\textbf{AKTU Answer Copy} $|$ \emph{Next.js, TypeScript, pdf-lib, Vercel} $|$ \href{https://aktucopy.vercel.app}{\underline{aktucopy.vercel.app}}}{2025}
+          \resumeItemListStart
+            \resumeItem{The university portal shows checked answer sheets but has no download; this app logs in on the server, handles the portal's sessions and hidden form fields, and returns one PDF, cutting \textbf{20 minutes to 1} per subject.}
+            \resumeItem{Used by \textbf{30+} students; reads the portal's options at runtime so renames do not break it, and shows page-level progress and short error IDs for support.}
+          \resumeItemListEnd
+      \resumeProjectHeading
+          {\textbf{AKTU Records Pipeline} $|$ \emph{TypeScript, Node.js, Cheerio, MongoDB}}{2024}
+          \resumeItemListStart
+            \resumeItem{Replaced days of manual copying for college administration: pulled \textbf{1,000+} student records from the portal into a database and spreadsheet in one unattended run, detecting dropped sessions and retrying.}
+          \resumeItemListEnd
+    \resumeSubHeadingListEnd
+
+\section{Research}
+  \resumeSubHeadingListStart
+    \resumeProjectHeading
+      {\textbf{Co-author, MPCON 2026} $|$ \emph{\href{https://ieeexplore.ieee.org/abstract/document/11508590/}{\underline{Deep Learning Architectures for Fault Detection in Power Grids}}}}{2026}
+      \resumeItemListStart
+        \resumeItem{Peer-reviewed comparison of CNN, ViT and Swin Transformer models; led the experiments and PyTorch code.}
+      \resumeItemListEnd
+  \resumeSubHeadingListEnd
+
+\section{Technical Skills}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Languages}{: TypeScript, JavaScript, Python, SQL, C, C++} \\
+     \textbf{Backend}{: Node.js, FastAPI, REST APIs, PostgreSQL, MongoDB, serverless functions} \\
+     \textbf{Frontend}{: React, Next.js, Redux, Electron} \\
+     \textbf{AI}{: Claude API, OpenAI API, Whisper, embeddings and retrieval, LLM evaluation, PyTorch} \\
+     \textbf{Tools}{: Git, GitHub Actions, Linux, Vercel, Cloudflare Workers, Playwright, pytest}
+    }}
+ \end{itemize}
+
+\section{Achievements}
+ \begin{itemize}[leftmargin=0.15in, label={}]
+    \small{\item{
+     \textbf{Top 50 of 600+ teams}, IIT Bombay e-Yantra $|$ \textbf{Semi-finalist}, APNA Hackathon $|$ \textbf{4-star C++}, HackerRank
+    }}
+ \end{itemize}
+
+\section{Education}
+  \resumeSubHeadingListStart
+    \resumeSubheading
+      {JSS Academy of Technical Education}{Noida, India}
+      {Bachelor of Technology in Electrical Engineering}{2022 -- 2026}
+  \resumeSubHeadingListEnd
+
+
+\end{document}

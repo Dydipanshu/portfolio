@@ -13,6 +13,7 @@ export const site = {
   location: 'Noida, India',
   timezone: 'Asia/Kolkata',
   email: 'dydipanshu2004@gmail.com',
+  resumePdf: '/Deepanshu_Yadav_Resume.pdf',
   socials: {
     github: 'https://github.com/dydipanshu',
     linkedin: 'https://www.linkedin.com/in/dydipanshu',
